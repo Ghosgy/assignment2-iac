@@ -1,0 +1,17 @@
+---
+- name: Verify deployed app
+  hosts: web
+  gather_facts: false
+
+  tasks:
+    - name: Check application responds on port 80
+      uri:
+        url: "http://{{ ansible_host }}"
+        method: GET
+        status_code: 200
+        return_content: yes
+      register: site_check
+
+    - name: Show returned content
+      debug:
+        var: site_check.status

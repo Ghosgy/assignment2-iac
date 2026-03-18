@@ -1,0 +1,48 @@
+---
+- name: Configure EC2 and deploy RunCalc Pro
+  hosts: web
+  become: true
+
+  vars_files:
+    - ../group_vars/all/vault.yml
+
+  tasks:
+    - name: Update apt cache
+      apt:
+        update_cache: yes
+
+    - name: Install Docker
+      apt:
+        name: docker.io
+        state: present
+
+    - name: Enable and start Docker
+      service:
+        name: docker
+        state: started
+        enabled: yes
+
+    - name: Log in to Docker Hub
+      community.docker.docker_login:
+        username: "{{ dockerhub_username }}"
+        password: "{{ dockerhub_password }}"
+
+    - name: Pull chosen image
+      community.docker.docker_image:
+        name: "{{ dockerhub_repo }}:{{ image_tag }}"
+        source: pull
+
+    - name: Remove existing container if present
+      community.docker.docker_container:
+        name: runcalc-pro
+        state: absent
+      ignore_errors: true
+
+    - name: Run container on port 80
+      community.docker.docker_container:
+        name: runcalc-pro
+        image: "{{ dockerhub_repo }}:{{ image_tag }}"
+        state: started
+        restart_policy: always
+        published_ports:
+          - "80:80"
