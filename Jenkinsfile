@@ -16,21 +16,6 @@ pipeline {
             }
         }
 
-        stage('Provision EC2') {
-            steps {
-                withCredentials([
-                    string(credentialsId: 'ansible-vault-pass', variable: 'VAULT_PASS'),
-                    usernamePassword(credentialsId: 'aws-creds', usernameVariable: 'AWS_ACCESS_KEY_ID', passwordVariable: 'AWS_SECRET_ACCESS_KEY')
-                ]) {
-                    sh '''
-                        echo "$VAULT_PASS" > vault_pass.txt
-                        ansible-playbook ansible/playbooks/provision.yml \
-                          --vault-password-file vault_pass.txt
-                    '''
-                }
-            }
-        }
-
         stage('Deploy Container') {
             steps {
                 withCredentials([
