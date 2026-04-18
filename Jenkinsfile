@@ -19,22 +19,14 @@ pipeline {
         stage('Deploy Container') {
             steps {
                 withCredentials([
-                    string(credentialsId: 'ansible-vault-pass', variable: 'VAULT_PASS'),
-                    sshUserPrivateKey(
-                        credentialsId: 'A2-ssh-key',
-                        keyFileVariable: 'SSH_KEY',
-                        usernameVariable: 'SSH_USER'
-                    )
+                    string(credentialsId: 'ansible-vault-pass', variable: 'VAULT_PASS')
                 ]) {
                     sh '''
                         echo "$VAULT_PASS" > vault_pass.txt
-
                         ansible-playbook \
                           -i ansible/inventory/hosts.ini \
                           ansible/playbooks/deploy.yml \
                           --extra-vars "image_tag=${IMAGE_TAG}" \
-                          --private-key "$SSH_KEY" \
-                          --user "$SSH_USER" \
                           --vault-password-file vault_pass.txt
                     '''
                 }
@@ -44,21 +36,13 @@ pipeline {
         stage('Verify Application') {
             steps {
                 withCredentials([
-                    string(credentialsId: 'ansible-vault-pass', variable: 'VAULT_PASS'),
-                    sshUserPrivateKey(
-                        credentialsId: 'A2-ssh-key',
-                        keyFileVariable: 'SSH_KEY',
-                        usernameVariable: 'SSH_USER'
-                    )
+                    string(credentialsId: 'ansible-vault-pass', variable: 'VAULT_PASS')
                 ]) {
                     sh '''
                         echo "$VAULT_PASS" > vault_pass.txt
-
                         ansible-playbook \
                           -i ansible/inventory/hosts.ini \
                           ansible/playbooks/verify.yml \
-                          --private-key "$SSH_KEY" \
-                          --user "$SSH_USER" \
                           --vault-password-file vault_pass.txt
                     '''
                 }
